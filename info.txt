@@ -1,0 +1,1 @@
+Una vez al año en node ejecutar : pnpm update date-holidays, para actualizar los feriados de argentina, porque cambian año a año.

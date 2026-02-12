@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Calendario Anual de Turnos <%= anio %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<style>
+   
+    :root {
+        --bg-color: #ffffff;
+        --text-color: #212529;
+        --card-bg: #f8f9fa;
+        --table-border: #dee2e6;
+        --header-color: #856404; 
+    }
+
+    [data-theme="dark"] {
+        --bg-color: #121212;
+        --text-color: #e0e0e0;
+        --card-bg: #1e1e1e;
+        --table-border: #333;
+        --header-color: #ffc107; 
+    }
+
+    body {
+        background-color: var(--bg-color) !important;
+        color: var(--text-color) !important;
+        margin: 0;
+        font-family: sans-serif;
+    }
+
+    .text-warning { color: var(--header-color) !important; }
+
+    .table {
+        --bs-table-bg: var(--bg-color);
+        --bs-table-color: var(--text-color);
+        --bs-table-border-color: var(--table-border);
+    }
+
+    .calendario-container { max-width: 1440px; margin: 0 auto; padding: 20px; }
+
+    
+    .turno-G { background-color: #B8E6F2 !important; color: #000 !important; }
+    .turno-H { background-color: #C7F2B8 !important; color: #000 !important; }
+    .turno-F { background-color: #F2D9B8 !important; color: #000 !important; }
+    .turno-E { background-color: #B8E6F2 !important; color: #000 !important; }
+    .turno-K { background-color: #C7F2B8 !important; color: #000 !important; }
+    .turno-J { background-color: #F2D9B8 !important; color: #000 !important; }
+    .turno-D { background-color: #E6B8F2 !important; color: #000 !important; }
+    
+    td.turno-_ { background-color: var(--card-bg) !important; opacity: 0.6; }
+
+    .mes-bloque { margin-bottom: 3rem; }
+
+    /* ESTILO FERIADOS */
+    .dia-feriado {
+        background-color: #dc3545 !important;
+        color: white !important;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        cursor: help;
+    }
+
+    .highlight {
+        outline: 3px solid #ffc107;
+        box-shadow: 0 0 10px #ffc107;
+        z-index: 5;
+        position: relative;
+    }
+
+    @media print {
+        @page { size: A4 portrait; margin: 0.4cm; }
+        .d-print-none { display: none !important; }
+        body { background-color: white !important; color: black !important; line-height: 1; }
+        .mes-bloque { margin-bottom: 0.2rem !important; page-break-inside: avoid; break-inside: avoid; }
+        .text-warning { color: black !important; font-size: 10px !important; border-bottom: 1px solid #ccc; }
+        .table { width: 100% !important; table-layout: fixed; margin-bottom: 0 !important; }
+        td, th { font-size: 7px !important; padding: 1px 0 !important; height: 12px !important; border: 1px solid #999 !important; }
+        .dia-feriado { border: 1px solid #dc3545 !important; color: #dc3545 !important; background: transparent !important; }
+        .d-flex.justify-content-between { display: block !important; text-align: center !important; }
+        h1 { font-size: 18px !important; text-align: center !important; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }
+   
+.tabla-movil {
+    display: none; 
+}
+
+@media (max-width: 768px) {
+    .tabla-pc {
+        display: none !important; 
+    }
+    .tabla-movil {
+        display: block !important; 
+    }
+}
+@media print {
+    .tabla-pc { display: block !important; }
+    .tabla-movil { display: none !important; }
+}
+
+.table th, .table td {
+    text-align: center !important; 
+    vertical-align: middle !important; 
+    padding: 8px 4px !important;
+}
+
+
+.tabla-movil td {
+    font-weight: bold;
+    height: 45px; 
+}
+
+
+.table th.text-start, .table td.text-start {
+    text-align: center !important;
+}
+
+
+    footer {
+        background-color: var(--card-bg);
+        color: var(--text-color);
+        padding: 20px 0;
+        margin-top: 50px;
+        border-top: 1px solid var(--table-border);
+        text-align: center;
+    }
+
+    @media print {
+        footer {
+            display: none !important;
+        }
+    }
+</style>
+</head>
+<body class="transition-theme">
+
+<div class="calendario-container">
+  <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <h1 class="mb-0">Calendario <%= anio %> - <%= regimen %></h1>
+    <div class="d-flex gap-2 d-print-none">
+      <button id="themeBtn" class="btn btn-outline-secondary">🌙 Modo Oscuro</button>
+      <button onclick="window.print()" class="btn btn-outline-info">🖨️ PDF</button>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-center align-items-center gap-3 mb-4 d-print-none">
+    <form method="GET" action="/anio" class="d-flex gap-2">
+      <input type="hidden" name="anio" value="<%= anio %>">
+      <select name="regimen" class="form-select w-auto">
+        <option value="6x1" <%= regimen === "6x1" ? "selected" : "" %>>Régimen 6x1</option>
+        <option value="6x2" <%= regimen === "6x2" ? "selected" : "" %>>Régimen 6x2</option>
+      </select>
+      <button type="submit" class="btn btn-warning">Cambiar</button>
+    </form>
+    <a href="/anio?anio=<%= anio - 1 %>&regimen=<%= regimen %>" class="btn btn-outline-secondary btn-sm">←</a>
+    <a href="/anio?anio=<%= anio + 1 %>&regimen=<%= regimen %>" class="btn btn-outline-secondary btn-sm">→</a>
+  </div>
+
+<% calendarioAnual.forEach(mesData => { %>
+    <div class="mes-bloque mb-5">
+        <h4 class="text-capitalize text-warning mb-3"><%= mesData.nombreMes %></h4>
+
+        <div class="tabla-pc table-responsive">
+            <table class="table table-bordered text-center align-middle">
+               <thead>
+                  <tr>
+                    <th></th>
+                    <% mesData.dias.forEach(d => { 
+                         const fecha = new Date(anio, mesData.mesIndex, d.dia);
+                         const nombres = ['DO','LU','MA','MI','JU','VI','SA'];
+                    %>
+                      <th><%= nombres[fecha.getDay()] %></th>
+                    <% }) %>
+                  </tr>
+                  <tr>
+                    <th>Día</th>
+                    <% mesData.dias.forEach(d => { %>
+                      <th>
+                        <span class="<%= d.esFeriado ? 'dia-feriado' : '' %>">
+                          <%= d.dia %>
+                        </span>
+                      </th>
+                    <% }) %>
+                  </tr>
+               </thead>
+               <tbody>
+                  <% const turnos = Object.keys(mesData.dias[0]).filter(k => !['dia', 'esFeriado', 'motivoFeriado'].includes(k)); %>
+                  <% turnos.forEach(turno => { %>
+                    <tr>
+                      <th class="text-start ps-2"><%= turno %></th>
+                      <% mesData.dias.forEach(d => { %>
+                        <td class="turno-<%= d[turno] %>" data-letra="<%= d[turno] %>"><%= d[turno] === "_" ? "" : d[turno] %></td>
+                      <% }) %>
+                    </tr>
+                  <% }) %>
+               </tbody>
+            </table>
+        </div>
+
+<div class="tabla-movil">
+    <% 
+        // 1. Calculamos cuántos espacios vacíos necesita el primer día para que el Domingo sea la col 7
+        // En JS: Dom=0, Lun=1... Sab=6. 
+        // Para que Domingo sea 7, necesitamos: Lun=0, Mar=1... Dom=6 espacios antes.
+        const primerDiaMes = new Date(anio, mesData.mesIndex, 1).getDay(); 
+        // Ajuste para que Lunes sea 1 y Domingo sea 7 (y el cálculo de espacios dé bien):
+        let espaciosVacios = (primerDiaMes === 0) ? 6 : primerDiaMes - 1;
+
+        // 2. Creamos una lista de días que incluya esos huecos al principio
+        let grillaDias = [];
+        for (let e = 0; e < espaciosVacios; e++) { grillaDias.push(null); }
+        mesData.dias.forEach(d => grillaDias.push(d));
+
+        // 3. Partimos la grilla en semanas exactas de 7
+        let semanas = [];
+        for (let i = 0; i < grillaDias.length; i += 7) {
+            semanas.push(grillaDias.slice(i, i + 7));
+        }
+    %>
+
+    <% semanas.forEach((semana) => { %>
+        <div class="table-responsive mb-3">
+            <table class="table table-bordered text-center table-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 50px;">Turno</th>
+                        <% const nombres = ['LU','MA','MI','JU','VI','SA','DO']; %>
+                        <% nombres.forEach((nom, idx) => { %>
+                            <th class="<%= idx === 6 ? 'bg-danger' : '' %>"><small><%= nom %></small></th>
+                        <% }) %>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="table-light">
+                        <td class="fw-bold">Día</td>
+                        <% semana.forEach((d, idx) => { %>
+                            <td>
+                                <% if (d) { %>
+                                    <span class="<%= d.esFeriado ? 'dia-feriado' : '' %>">
+                                        <%= d.dia %>
+                                    </span>
+                                <% } %>
+                            </td>
+                        <% }) %>
+                    </tr>
+
+                    <% turnos.forEach(turno => { %>
+                        <tr>
+                            <td class="text-start fw-bold" style="font-size: 10px;"><%= turno %></td>
+                            <% semana.forEach(d => { %>
+                                <td class="<%= d ? 'turno-' + d[turno] : '' %>" style="font-size: 11px;">
+                                    <%= (d && d[turno] !== "_") ? d[turno] : "" %>
+                                </td>
+                            <% }) %>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    <% }) %>
+</div>
+    </div>
+<% }) %>  
+</div>
+<footer>
+    <div class="container">
+        <p class="mb-1">© <%= new Date().getFullYear() %> - Calendario de Turnos</p>
+        <p class="mb-2">
+            Desarrollado por <strong>Leo Parodi</strong> 
+            <span class="badge bg-secondary">Full Stack Developer</span>
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="https://github.com/Leo79Jp" target="_blank" class="text-reset text-decoration-none">
+                <i class="fab fa-github fa-2x"></i>
+            </a>
+            </div>
+    </div>
+</footer>
+<script>
+    const themeBtn = document.getElementById('themeBtn');
+    const htmlEl = document.documentElement;
+    
+    if (localStorage.getItem('theme') === 'dark') {
+        htmlEl.setAttribute('data-theme', 'dark');
+        themeBtn.innerHTML = '☀️ Modo Claro';
+    }
+
+    themeBtn.addEventListener('click', () => {
+        if (htmlEl.getAttribute('data-theme') === 'dark') {
+            htmlEl.removeAttribute('data-theme');
+            themeBtn.innerHTML = '🌙 Modo Oscuro';
+            localStorage.setItem('theme', 'light');
+        } else {
+            htmlEl.setAttribute('data-theme', 'dark');
+            themeBtn.innerHTML = '☀️ Modo Claro';
+            localStorage.setItem('theme', 'dark');
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const celdas = document.querySelectorAll('td[data-letra]');
+        celdas.forEach(celda => {
+            celda.addEventListener('click', () => {
+                const letra = celda.getAttribute('data-letra');
+                if (!letra || letra === "_" || letra === "undefined") return;
+                
+                if (celda.classList.contains('highlight')) {
+                    document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+                } else {
+                    document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+                    document.querySelectorAll('.turno-' + letra).forEach(el => el.classList.add('highlight'));
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>
