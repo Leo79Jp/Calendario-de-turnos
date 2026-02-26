@@ -173,9 +173,19 @@
     <a href="/anio?anio=<%= anio - 1 %>&regimen=<%= regimen %>" class="btn btn-outline-secondary btn-sm">←</a>
     <a href="/anio?anio=<%= anio + 1 %>&regimen=<%= regimen %>" class="btn btn-outline-secondary btn-sm">→</a>
   </div>
+<div class="mb-4 d-md-none d-print-none">
+    <label for="selectorMes" class="form-label fw-bold text-warning">Seleccionar Mes:</label>
+    <select id="selectorMes" class="form-select border-warning">
+        <% calendarioAnual.forEach((mes, index) => { %>
+            <option value="mes-<%= index %>">
+                <%= mes.nombreMes.charAt(0).toUpperCase() + mes.nombreMes.slice(1) %>
+            </option>
+        <% }) %>
+    </select>
+</div>
 
-<% calendarioAnual.forEach(mesData => { %>
-    <div class="mes-bloque mb-5">
+<% calendarioAnual.forEach((mesData, index) => { %>
+    <div id="mes-<%= index %>" class="mes-bloque mb-5">
         <h4 class="text-capitalize text-warning mb-3"><%= mesData.nombreMes %></h4>
 
         <div class="tabla-pc table-responsive">
@@ -298,6 +308,78 @@
     const themeBtn = document.getElementById('themeBtn');
     const htmlEl = document.documentElement;
     
+    // Gestión de Tema (Oscuro/Claro)
+    if (localStorage.getItem('theme') === 'dark') {
+        htmlEl.setAttribute('data-theme', 'dark');
+        themeBtn.innerHTML = '☀️ Modo Claro';
+    }
+
+    themeBtn.addEventListener('click', () => {
+        if (htmlEl.getAttribute('data-theme') === 'dark') {
+            htmlEl.removeAttribute('data-theme');
+            themeBtn.innerHTML = '🌙 Modo Oscuro';
+            localStorage.setItem('theme', 'light');
+        } else {
+            htmlEl.setAttribute('data-theme', 'dark');
+            themeBtn.innerHTML = '☀️ Modo Claro';
+            localStorage.setItem('theme', 'dark');
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const selector = document.getElementById('selectorMes');
+        const bloquesMes = document.querySelectorAll('.mes-bloque');
+        const celdas = document.querySelectorAll('td[data-letra]');
+        
+        // 1. Lógica de resaltado de turnos al hacer click
+        celdas.forEach(celda => {
+            celda.addEventListener('click', () => {
+                const letra = celda.getAttribute('data-letra');
+                if (!letra || letra === "_" || letra === "undefined") return;
+                
+                if (celda.classList.contains('highlight')) {
+                    document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+                } else {
+                    document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+                    document.querySelectorAll('.turno-' + letra).forEach(el => el.classList.add('highlight'));
+                }
+            });
+        });
+
+        // 2. Lógica de filtrado por mes en móvil
+        const mesActualIdx = new Date().getMonth(); 
+
+        function filtrarMeses() {
+            if (window.innerWidth <= 768) {
+                const seleccionado = selector.value;
+                bloquesMes.forEach(bloque => {
+                    if (bloque.id === seleccionado) {
+                        bloque.style.setProperty('display', 'block', 'important');
+                    } else {
+                        bloque.style.setProperty('display', 'none', 'important');
+                    }
+                });
+            } else {
+                bloquesMes.forEach(bloque => {
+                    bloque.style.display = 'block';
+                });
+            }
+        }
+
+        if (selector) {
+            selector.value = `mes-${mesActualIdx}`;
+            if (!selector.value) selector.selectedIndex = 0;
+            selector.addEventListener('change', filtrarMeses);
+            filtrarMeses();
+        }
+
+        window.addEventListener('resize', filtrarMeses);
+    });
+</script>
+<!-- <script>
+    const themeBtn = document.getElementById('themeBtn');
+    const htmlEl = document.documentElement;
+    
     if (localStorage.getItem('theme') === 'dark') {
         htmlEl.setAttribute('data-theme', 'dark');
         themeBtn.innerHTML = '☀️ Modo Claro';
@@ -331,6 +413,52 @@
             });
         });
     });
-</script>
+
+document.addEventListener('DOMContentLoaded', () => {
+    const selector = document.getElementById('selectorMes');
+    const bloquesMes = document.querySelectorAll('.mes-bloque');
+    
+    // Obtenemos el mes actual real (0 = Enero, 1 = Febrero, etc.)
+    const mesActualIdx = new Date().getMonth(); 
+
+    function filtrarMeses() {
+        // Solo filtramos si estamos en vista móvil (ancho menor a 768px)
+        if (window.innerWidth <= 768) {
+            const seleccionado = selector.value;
+            bloquesMes.forEach(bloque => {
+                if (bloque.id === seleccionado) {
+                    bloque.style.setProperty('display', 'block', 'important');
+                } else {
+                    bloque.style.setProperty('display', 'none', 'important');
+                }
+            });
+        } else {
+            // En PC o tablets grandes, mostramos todos los meses
+            bloquesMes.forEach(bloque => {
+                bloque.style.display = 'block';
+            });
+        }
+    }
+
+    if (selector) {
+        // Marcamos el mes actual en el select al cargar
+        selector.value = `mes-${mesActualIdx}`;
+        
+        // Si por alguna razón el año no tiene 12 meses (ej. proyecto corto), 
+        // validamos que el index exista, si no, ponemos el primero.
+        if (!selector.value) selector.selectedIndex = 0;
+
+        selector.addEventListener('change', filtrarMeses);
+        
+        // Ejecutar al inicio
+        filtrarMeses();
+    }
+
+    // Escuchar el cambio de tamaño de pantalla
+    window.addEventListener('resize', filtrarMeses);
+});
+
+</script> -->
+
 </body>
 </html>
