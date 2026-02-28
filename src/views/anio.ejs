@@ -194,7 +194,7 @@
                   <tr>
                     <th></th>
                     <% mesData.dias.forEach(d => { 
-                         const fecha = new Date(anio, mesData.mesIndex, d.dia);
+                         const fecha = new Date(anio, mesData.mesIndex, d.dia, 12, 0, 0);
                          const nombres = ['DO','LU','MA','MI','JU','VI','SA'];
                     %>
                       <th><%= nombres[fecha.getDay()] %></th>
@@ -227,19 +227,13 @@
 
 <div class="tabla-movil">
     <% 
-        // 1. Calculamos cuántos espacios vacíos necesita el primer día para que el Domingo sea la col 7
-        // En JS: Dom=0, Lun=1... Sab=6. 
-        // Para que Domingo sea 7, necesitamos: Lun=0, Mar=1... Dom=6 espacios antes.
-        const primerDiaMes = new Date(anio, mesData.mesIndex, 1).getDay(); 
-        // Ajuste para que Lunes sea 1 y Domingo sea 7 (y el cálculo de espacios dé bien):
+        
+        const primerDiaMes = new Date(anio, mesData.mesIndex, 1, 12, 0, 0).getDay(); 
         let espaciosVacios = (primerDiaMes === 0) ? 6 : primerDiaMes - 1;
-
-        // 2. Creamos una lista de días que incluya esos huecos al principio
         let grillaDias = [];
         for (let e = 0; e < espaciosVacios; e++) { grillaDias.push(null); }
         mesData.dias.forEach(d => grillaDias.push(d));
 
-        // 3. Partimos la grilla en semanas exactas de 7
         let semanas = [];
         for (let i = 0; i < grillaDias.length; i += 7) {
             semanas.push(grillaDias.slice(i, i + 7));
@@ -304,6 +298,7 @@
             </div>
     </div>
 </footer>
+
 <script>
     const themeBtn = document.getElementById('themeBtn');
     const htmlEl = document.documentElement;
@@ -376,89 +371,6 @@
         window.addEventListener('resize', filtrarMeses);
     });
 </script>
-<!-- <script>
-    const themeBtn = document.getElementById('themeBtn');
-    const htmlEl = document.documentElement;
-    
-    if (localStorage.getItem('theme') === 'dark') {
-        htmlEl.setAttribute('data-theme', 'dark');
-        themeBtn.innerHTML = '☀️ Modo Claro';
-    }
-
-    themeBtn.addEventListener('click', () => {
-        if (htmlEl.getAttribute('data-theme') === 'dark') {
-            htmlEl.removeAttribute('data-theme');
-            themeBtn.innerHTML = '🌙 Modo Oscuro';
-            localStorage.setItem('theme', 'light');
-        } else {
-            htmlEl.setAttribute('data-theme', 'dark');
-            themeBtn.innerHTML = '☀️ Modo Claro';
-            localStorage.setItem('theme', 'dark');
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const celdas = document.querySelectorAll('td[data-letra]');
-        celdas.forEach(celda => {
-            celda.addEventListener('click', () => {
-                const letra = celda.getAttribute('data-letra');
-                if (!letra || letra === "_" || letra === "undefined") return;
-                
-                if (celda.classList.contains('highlight')) {
-                    document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
-                } else {
-                    document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
-                    document.querySelectorAll('.turno-' + letra).forEach(el => el.classList.add('highlight'));
-                }
-            });
-        });
-    });
-
-document.addEventListener('DOMContentLoaded', () => {
-    const selector = document.getElementById('selectorMes');
-    const bloquesMes = document.querySelectorAll('.mes-bloque');
-    
-    // Obtenemos el mes actual real (0 = Enero, 1 = Febrero, etc.)
-    const mesActualIdx = new Date().getMonth(); 
-
-    function filtrarMeses() {
-        // Solo filtramos si estamos en vista móvil (ancho menor a 768px)
-        if (window.innerWidth <= 768) {
-            const seleccionado = selector.value;
-            bloquesMes.forEach(bloque => {
-                if (bloque.id === seleccionado) {
-                    bloque.style.setProperty('display', 'block', 'important');
-                } else {
-                    bloque.style.setProperty('display', 'none', 'important');
-                }
-            });
-        } else {
-            // En PC o tablets grandes, mostramos todos los meses
-            bloquesMes.forEach(bloque => {
-                bloque.style.display = 'block';
-            });
-        }
-    }
-
-    if (selector) {
-        // Marcamos el mes actual en el select al cargar
-        selector.value = `mes-${mesActualIdx}`;
-        
-        // Si por alguna razón el año no tiene 12 meses (ej. proyecto corto), 
-        // validamos que el index exista, si no, ponemos el primero.
-        if (!selector.value) selector.selectedIndex = 0;
-
-        selector.addEventListener('change', filtrarMeses);
-        
-        // Ejecutar al inicio
-        filtrarMeses();
-    }
-
-    // Escuchar el cambio de tamaño de pantalla
-    window.addEventListener('resize', filtrarMeses);
-});
-
-</script> -->
 
 </body>
 </html>
